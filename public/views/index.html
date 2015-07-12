@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- bootstrap css -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- stylesheet -->
+<link type="text/css" rel="stylesheet" href="styles/main.css">
+
+
+
+<title>Say something.</title>
+</head>
+<body>
+
+<header class="intro-header" style="background-image: url('https://secure.static.tumblr.com/792b45073b89629fb70e307c9af99163/4mlgeiy/eFdn7sjxm/tumblr_static_tumblr_static_d0yhhhaz50084cc40scgg040k_640.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="site-heading">
+                        <h1>Say something.</h1>
+                        <hr class="small">
+                        <span class="subheading"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+</header>	
+
+<!-- New post form -->
+<div class="container">
+	<div class="row">
+	  <div class="col-md-6 col-md-offset-3">
+	    <form class="text-center" id="new-post">
+	      <div class="form-group">
+	        <textarea class="form-control submissionTwo" type="textarea" id="new-text" placeholder="Your thoughts." class="span6" rows="3" required></textarea>
+	      </div>
+	      <div class="form-group">
+	        <input type="submit" class="btn btn-success" value="Publish">
+	      </div>
+	    </form>
+	    <hr>
+	    <div>
+	    	<ul class="list-group" id="post-list"></ul>
+	    </div>
+	  </div>
+	</div>
+</div>
+
+
+  	<!-- jquery -->
+  	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+  	<!-- bootstrap js -->
+ 	 <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+  	<!-- underscore -->
+  	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+
+  	<!-- client-side javascript -->
+	<script type="text/javascript" src="scripts/main.js"></script>
+
+  <!-- underscore template -->
+  <script type="text/template" id="post-template">
+    <div class="post">
+    <li class="list-group-item post" id="post-<%= id %>" data-id="<%= id %>">
+      <span class="todo-text"> <%= text %></span>
+
+
+      <button type="button" class="close delete delete-post" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+
+      <a class="edit-pencil" data-toggle="collapse" data-target="#update-<%= id %>">
+        <span class="glyphicon glyphicon-pencil edit"></span>
+      </a>
+
+
+      <div class="collapse" id="update-<%= id %>">
+        <br>
+        <form class="form-inline update-post">
+          <input type="text" class="updated-text form-control " value="<%= text %>" placeholder="New post?">
+          <input type="submit" class="btn btn-default" value="Update post">
+        </form>
+      </div>
+      </li>
+
+    </div>
+  </script>
+
+
+
+</body>
+</html>

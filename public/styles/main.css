@@ -1,0 +1,29 @@
+.submissionOne {
+	width: 550px;
+	border: 1px solid #999999;
+	padding: 5px; 
+}
+.submissionTwo {
+	width: 550px; 
+	height: 150px; 
+	border: 1px solid #999999; 
+	padding: 5px; 
+}
+
+.container{
+	margin-bottom: 50px;
+}	
+
+.edit-pencil {
+  color: #aaaaaa;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.edit-pencil:hover {
+  color: #333333;
+}
+
+.list-group-item {
+	margin: 20px;  
+}
