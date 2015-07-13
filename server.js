@@ -12,7 +12,7 @@ app.use(express.static(__dirname + '/public'));
 // configure bodyParser (for handling data)
 app.use(bodyParser.urlencoded({extended: true}));
 
-// pre-seeded phrase data
+// pre-seeded post data
 var posts = [
   {id: 1, text: 'post 1 testing!'},
   {id: 2, text: 'post 2 testing!'}, 
@@ -30,57 +30,57 @@ app.get('/', function (req, res) {
 
 // API ROUTES
 
-// phrases index
+// posts index
 app.get('/api/posts', function (req, res) {
-  // send all phrases as JSON response
+  // send all posts as JSON response
   res.json(posts);
 });
 
-// create new phrase
+// create new post
 app.post('/api/posts', function (req, res) {
   // grab params (word and definition) from form data
   var newPost = req.body;
   
-  // set sequential id (last id in `phrases` array + 1)
+  // set sequential id (last id in `posts` array + 1)
   if (posts.length > 0) {
     newPost.id = posts[posts.length - 1].id +  1;
   } else {
     newPost.id = 0;
   }
 
-  // add newPhrase to `phrases` array
+  // add newPost to `posts` array
   posts.push(newPost);
   
-  // send newPhrase as JSON response
+  // send newPost as JSON response
   res.json(newPost);
 });
 
-// update phrase
+// update post
 app.put('/api/posts/:id', function (req, res) {
 
   // set the value of the id
   var targetId = parseInt(req.params.id);
 
-  // find item in `phrases` array matching the id
+  // find item in `post` array matching the id
   var foundPost = _.findWhere(posts, {id: targetId});
 
-  // update the phrase's word
+  // update the post's word
   foundPost.text = req.body.text;
 
-  // update the phrase's definition
+  // update the post's definition
   foundPost.definition = req.body.definition;
 
   // send back edited object
   res.json(foundPost);
 });
 
-// delete phrase
+// delete post
 app.delete('/api/posts/:id', function (req, res) {
   
   // set the value of the id
   var targetId = parseInt(req.params.id);
 
-  // find item in `phrases` array matching the id
+  // find item in `posts` array matching the id
   var foundPost = _.findWhere(posts, {id: targetId});
 
   // get the index of the found item
