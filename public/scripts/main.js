@@ -15,11 +15,11 @@ $(function() {
     },
 
     all: function() {
-      // send GET request to server to get all phrases
+      // send GET request to server to get all posts
       $.get('/api/posts', function(data) {
         var allPosts = data;
         
-        // iterate through each phrase
+        // iterate through each post
         _.each(allPosts, function(post) {
           postsController.render(post);
         });
@@ -47,10 +47,11 @@ $(function() {
         data: {
           text: updatedText
         },
+
         success: function(data) {
           var updatedPost = data;
-
-          // replace existing phrase in view with updated phrase
+        console.log(data)
+          // replace existing post in view with updated phrase
           var $postHtml = $(postsController.template(updatedPost));
           $('#post-' + postId).replaceWith($postHtml);
         }
@@ -74,26 +75,28 @@ $(function() {
     addEventHandlers: function() {
       $('#post-list')
 
-        // for update: submit event on `.update-phrase` form
+        // for update: submit event on `.update-post` form
         .on('submit', '.update-post', function(event) {
+          console.log('submit button works')
           event.preventDefault();
           
-          // find the phrase's id (stored in HTML as `data-id`)
+          
+          // find the post's id (stored in HTML as `data-id`)
           var postId = $(this).closest('.post').attr('data-id');
           
-          // udpate the phrase with form data
+          // udpate the post with form data
           var updatedText = $(this).find('.updated-text').val();
           postsController.update(postId, updatedText);
         })
         
-        // for delete: click event on `.delete-phrase` button
+        // for delete: click event on `.delete-post` button
         .on('click', '.delete-post', function(event) {
           event.preventDefault();
 
-          // find the phrase's id
+          // find the post's id
           var postId = $(this).closest('.post').attr('data-id');
           
-          // delete the phrase
+          // delete the post
           postsController.delete(postId);
         });
     },

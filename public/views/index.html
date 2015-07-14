@@ -66,20 +66,20 @@
   <!-- underscore template -->
   <script type="text/template" id="post-template">
     <div class="post">
-    <li class="list-group-item post" id="post-<%= id %>" data-id="<%= id %>">
+    <li class="list-group-item post" id="post-<%= _id %>" data-id="<%= _id %>">
       <span class="todo-text"> <%= text %></span>
 
 
-      <button type="button" class="close delete delete-post" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <button type="button" class="delete-post close delete " aria-label="Close"><span aria-hidden="true">&times;</span></button>
 
-      <a class="edit-pencil" data-toggle="collapse" data-target="#update-<%= id %>">
+      <a class="edit-pencil" data-toggle="collapse" data-target="#update-<%= _id %>" data-id="<%= _id %>">
         <span class="glyphicon glyphicon-pencil edit"></span>
       </a>
 
 
-      <div class="collapse" id="update-<%= id %>">
+      <div class="collapse" id="update-<%= _id %>">
         <br>
-        <form class="form-inline update-post">
+        <form class="update-post form-inline" data-id="<%= _id %>">
           <input type="text" class="updated-text form-control " value="<%= text %>" placeholder="New post?">
           <input type="submit" class="btn btn-default" value="Update post">
         </form>
