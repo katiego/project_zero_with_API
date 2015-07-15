@@ -4,36 +4,73 @@
 var express = require('express'),
     app = express(),
     bodyParser = require('body-parser'),
-    _ = require('underscore');
-
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/posts');
-
-// serve js and css files from public folder
-app.use(express.static(__dirname + '/public'));
+    _ = require("underscore");
 
 // configure bodyParser (for handling data)
 app.use(bodyParser.urlencoded({extended: true}));
 
-var Post = require('./models/post');
 
-// pre-seeded post data
-// var posts = [
-//   {id: 1, text: 'post 1 testing!'},
-//   {id: 2, text: 'post 2 testing!'}, 
-//   {id: 3, text: 'post 3 testing!'}, 
-//   {id: 4, text: 'post 4 testing!'}, 
-//   {id: 5, text: 'post 5 testing!'} 
-// ];
+// serve js and css files from public folder
+app.use(express.static(__dirname + '/public'));
 
+// include mongoose
+var mongoose = require('mongoose');
+
+// include our module from the other file
+var db = require("./models/models");
+
+// connect to db
+mongoose.connect('mongodb://localhost/posts');
+
+
+var User = require('./models/user');
+
+//cookie and session stuff
+var session = require('express-session');
+
+
+app.use(session({
+  saveUninitialized: true,
+  resave: true,
+  secret: 'OurSuperSecretCookieSecret',
+  cookie: { maxAge: 60000 }
+}));
+
+app.get('/login', function (req, res) {
+  var html = '<form action="/api/sessions" method="post">' +
+               'Your email: <input type="text" name="email"><br>' +
+               'Your password: <input type="text" name="password"><br>' +
+               '<button type="submit">Submit</button>' +
+               '</form>';
+  if (req.session.user) {
+    html += '<br>Your email from your session is: ' + req.session.user.email;
+  }
+  console.log(req.session);
+  console.log(req.session.user);
+  res.send(html);
+})
+
+app.post('/api/sessions', function (req, res) {
+
+  User.authenticate(req.body.email, req.body.password, function(error, user) {
+    console.log(user);
+    req.session.user = user;
+    res.redirect('/login');
+  });
+});
 
 
 // STATIC ROUTES
-
 // root (serves index.html)
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/views/index.html');
 });
+
+//DATA ROUTES
+
+  //API ROUTES
+  //MONGO DB ROUTES
+
 
 // API ROUTES
 
@@ -43,11 +80,15 @@ app.get('/', function (req, res) {
 //   res.json(posts);
 // });
 
-
 //get posts data from mongodb
+//{} in find argument is where we can narrow down what types of posts to include
 app.get('/api/posts', function (req, res) {
-  Post.find(function (err, posts) {
+  db.Post.find({}, function (err, posts) {
+    if (err) {
+      res.status(500).send(err)
+    } else {
     res.json(posts); 
+  }
   }); 
 });
 
@@ -74,16 +115,17 @@ app.get('/api/posts', function (req, res) {
 
 // create new post to save in MongoDB
 app.post('/api/posts', function (req, res) {
-  // create new phrase with form data (`req.body`)
-  var newPost = new Post({
+  // create new author with form data (`req.body`)
+  var newAuthor = new db.Author({
+    name: req.body.author
+  });
+  newAuthor.save();
+
+  // create a new post
+  var newPost = new db.Post({
+    author: newAuthor._id,
     text: req.body.text
   });
-
-  // save new phrase in db
-  newPost.save(function (err, savedPost) {
-    res.json(savedPost);
-  });
-});
 
 
 // // update post
@@ -108,20 +150,38 @@ app.post('/api/posts', function (req, res) {
 
 
 // update post in MongoDB
-app.put('/api/posts/:id', function (req, res) {
-  // set the value of the id
-  var targetId = req.params.id;
-  console.log('server side target id: ' + targetId)
-  // find post in db by id
-  Post.findOne({_id: targetId}, function (err, foundPost) {
-    // update the post's tetx
-    foundPost.text = req.body.text;
+app.put('/api/posts/:id', function(req, res) {
 
-    // save updated phrase in db
-    foundPost.save(function (err, savedPost) {
-      res.json(savedPost);
-    });
+  // take the value of the id from the url parameter
+  var targetId = req.params.id;
+
+  // find item in `posts` array matching the id
+  db.Post.findOne({_id: targetId}, function(err, foundPost){
+    console.log(foundPost); 
+
+    if(err){
+      res.status(500).send(err);
+
+    } else {
+      // update the post's author
+      foundPost.author = req.body.author;
+
+      // update the post's text
+      foundPost.text = req.body.text;
+
+      // save the changes
+      foundPost.save(function(err, savedPost){
+        if (err){
+          res.status(500).send(err);
+        } else {
+          // send back edited object
+          res.json(savedPost);
+        }
+      });
+    }
+
   });
+
 });
 
 
@@ -152,10 +212,90 @@ app.delete('/api/posts/:id', function (req, res) {
   var targetId = req.params.id;
 
   // find post in db by id and remove
-  Post.findOneAndRemove({_id: targetId}, function (err, deletedPost) {
+  db.Post.findOneAndRemove({_id: targetId}, function (err, deletedPost) {
     res.json(deletedPost);
   });
 });
+
+////Comments////
+
+// get all comments for one post
+app.get('/api/posts/:postid/comments', function(req, res){
+  // query the database to find the post indicated by the id
+  db.Post.findOne({_id: req.params.postid}, function(err, post){
+    // send the post's comments as the JSON response
+    res.json(post.comments);
+  });
+});
+
+// add a new comment to a post
+app.post('/api/posts/:postid/comments', function(req, res){
+
+  // query the database to find the post indicated by the id
+  db.Post.findOne({_id: req.params.postid}, function(err, post){
+    // create a new comment record
+    var newComment = new db.Comment({text: req.body.text});
+
+    // add the new comment to the post's list of embedded comments
+    post.comments.push(newComment);
+
+    // send the new comment as the JSON response
+    res.json(newComment);
+  });
+});
+
+// get all authors
+app.get('/api/authors', function(req, res){
+  // query the database to find all authors
+  db.Author.find({}, function(err, authors){
+    // send the authors as the JSON response
+    res.json(authors);
+  });
+}); 
+
+// create a new author
+app.post('/api/authors', function(req, res){
+  // make a new author, using the name from the request body
+  var newAuthor = new db.Author({name: req.body.name});
+
+  // save the new author
+  newAuthor.save(function(err, author){
+    // send the new author as the JSON response
+    res.json(author);
+  });
+});
+
+
+// assign a specific author to a specific post
+
+app.put('/api/posts/:postid/authors/:authorid', function(req, res){
+  // query the database to find the author 
+  // (to make sure the id actually matches an author)
+  db.Author.find({_id: req.params.authorid}, function(err, author){
+    if (err){
+      console.log("error: ", err);
+      res.status(500).send("no author with id "+req.params.authorid);
+    } else {
+      // query the database to find the post
+      db.Post.find({_id: req.params.postid}, function(err, post){
+
+        if (err){  
+          res.status(500).send("no post with id"+req.params.postid);
+        } else {  // we found a post!
+          // update the post to reference the author
+          post.author = author._id;
+
+          // save the updated post
+          post.save(function(err, savedPost){
+            // send the updated post as the JSON response
+            res.json(savedPost);
+          });
+        }
+      });
+    }
+  });
+});
+
 
 // set server to localhost:3000
 app.listen(3000, function () {

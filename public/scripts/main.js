@@ -101,6 +101,7 @@ $(function() {
         });
     },
 
+
     setupView: function() {
       // append existing phrases to view
       postsController.all();
